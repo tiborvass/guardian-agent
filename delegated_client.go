@@ -27,7 +27,8 @@ type SSHCommand struct {
 	Cmd          string
 	ProxyCommand string
 	StdinNull    bool
-	ForceTty     bool
+	DisableTTY   bool
+	ForceTTY     bool
 }
 
 type client struct {
@@ -136,7 +137,7 @@ func (c *client) startCommand(conn *ssh.Client, cmd string) (err error) {
 		return fmt.Errorf("failed to setup stderr: %s", err)
 	}
 
-	if cmd == "" || c.ForceTty {
+	if !c.DisableTTY && (cmd == "" || c.ForceTTY) {
 		// Set up terminal modes -- use some reasonable defaults
 		modes := ssh.TerminalModes{
 			ssh.TTY_OP_ISPEED: 38400, // baud in
@@ -207,7 +208,7 @@ func (c *client) startCommand(conn *ssh.Client, cmd string) (err error) {
 				sigch := make(chan os.Signal, 1)
 				signal.Notify(sigch, os.Interrupt)
 				go func() {
-					for _ = range sigch {
+					for range sigch {
 						terminal.Restore(int(os.Stdin.Fd()), oldState)
 						os.Exit(1)
 					}

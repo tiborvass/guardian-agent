@@ -32,6 +32,8 @@ type options struct {
 
 	StdinNull bool `short:"n" description:"Redirects stdin from /dev/null"`
 
+	DisableTTY bool `short:"T" description:"Disable TTY allocation"`
+
 	ForceTTY []bool `short:"t" description:"Forces TTY allocation"`
 
 	SSHCommand SSHCommand `positional-args:"true" required:"true"`
@@ -136,7 +138,8 @@ func main() {
 		Username:     opts.Username,
 		Cmd:          cmd,
 		ProxyCommand: proxyCommand,
-		ForceTty:     len(opts.ForceTTY) == 2,
+		DisableTTY:   opts.DisableTTY,
+		ForceTTY:     len(opts.ForceTTY) == 2,
 		StdinNull:    opts.StdinNull,
 	}
 	err = guardianagent.RunSSHCommand(sshCmd)
